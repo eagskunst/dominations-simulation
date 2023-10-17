@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import events
 
 @dataclass
 class Nation():
@@ -17,10 +18,11 @@ class Nation():
     current_busy_population_count: int
 
     def advance_time(self):
-        self.advance_time += 1
+        self.current_time += 1
     
-    def mine_gold(self):
-        pass
+    def mine_gold(self, event_handler, resources):
+        event = events.MineGoldEvent(self, resources)
+        event_handler.add_event(event)
 
 @dataclass
 class Resources():
