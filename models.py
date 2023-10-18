@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import events
+from entities import Animal
 
 @dataclass
 class Nation():
@@ -12,10 +13,12 @@ class Nation():
     gold_mine_spawn_rate: float
     roads_count: int
     population_count: int
-    road_gold_generation: float
+    road_gold_generation: int
     hunt_time: int
     mine_time: int
     current_busy_population_count: int
+    buildings_count: int
+    animals: list[Animal] = []
 
     def advance_time(self):
         self.current_time += 1
@@ -23,6 +26,24 @@ class Nation():
     def mine_gold(self, event_handler, resources):
         event = events.MineGoldEvent(self, resources)
         event_handler.add_event(event)
+    
+    def collect_gold_from_roads(self, event_handler, resources):
+        event = events.CollectRoadGold(self, resources)
+        event_handler.add_event(event)
+    
+    def build_road(self, event_handler):
+        event = events.BuildRoadEvent(self)
+        event_handler.add_event(event)
+    
+    def open_space(self, event_handler):
+        event = events.OpenSpaceEvent(self)
+        event_handler.add_event(event)
+    
+    def hunt_animal(self, event_handler, animal_name: str, resources):
+        event = events.HuntAnimalEvent(self, animal_name, resources)
+        event_handler.add_event(event)
+        
+        
 
 @dataclass
 class Resources():
