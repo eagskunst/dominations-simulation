@@ -1,5 +1,5 @@
 from models import Nation, Resources, Combat, ResearchAndDevelopment, EnemyNation
-from entities import Animal
+from entities import Animal, BuildingFactory, Building, GoldBuilding, HouseBuilding, FoodBuilding
 
 class Event:
 
@@ -140,3 +140,82 @@ class HuntAnimalEvent(Event):
             return next(x for x in lst if predicate(x))
         except StopIteration:
             return None
+
+class BuildBuilding(Event):
+
+    def __init__(self, nation: Nation, rd: ResearchAndDevelopment, res: Resources, building_type: str, seed: int):
+        building = BuildingFactory().create(building_type)
+        if nation.current_busy_population_count + building.workers_needed() > nation.population_count:
+            print("There is not enough population for doing this work")
+            self.thicks = -1
+        gold_cost, food_cost = rd.calculate_building_cost(building_type, seed) 
+        if food_cost > res.food_count:
+            print("There is not enough food for doing this work")
+            self.thicks = -1
+        elif gold_cost > res.gold_count:
+            print("There is not enough gold for doing this work")
+            self.thicks = -1
+        
+        if self.thicks == -1:
+            self.thicks = 0
+        else:
+            res.food_count -= food_cost
+            res.gold_count -= gold_cost
+            nation.current_busy_population_count += building.workers_needed()
+            self.thicks = rd.bulding_build_time
+            self.nation = nation
+            self.res = res
+            self.building = building
+    
+    def thick(self):
+        self.thicks -= 1
+        if self.thicks > 0:
+            return
+        self.nation.current_busy_population_count -= self.building.workers_needed()
+        if type(self.building) is HouseBuilding:
+            self.nation.houses_count += 1
+            self.nation.population_count += 2
+        elif type(self.building) is FoodBuilding or type(self.building) is GoldBuilding:
+            self.res.gold_food_buidings.append(self.building)
+
+class ImproveBuilding(Event):
+
+    def __init__(self, rd: ResearchAndDevelopment, nation: Nation, res: Resources, building: Building, seed):
+        if type(building) is HouseBuilding:
+            print("You can't improve houses")
+        building.level += 1
+        if nation.current_busy_population_count + building.workers_needed() > nation.population_count:
+            print("There is not enough population for doing this work")
+            self.thicks = -1
+            building.level -= 1
+        elif building.level > rd.max_building_improvements:
+            print("You can not upgrade this building to the next level before changing eras")
+            self.thicks = -1
+            building.level -= 1
+        gold_cost, food_cost = rd.calculate_improvement_cost(building.type, seed) 
+        if food_cost > res.food_count:
+            print("There is not enough food for doing this work")
+            self.thicks = -1
+            building.level -= 1
+        elif gold_cost > res.gold_count:
+            print("There is not enough gold for doing this work")
+            self.thicks = -1
+            building.level -= 1
+        if self.thicks == -1:
+            self.thicks = 0
+        else:
+            res.food_count -= food_cost
+            res.gold_count -= gold_cost
+            nation.current_busy_population_count += building.workers_needed()
+            self.thicks = rd.building_improvement_time
+            self.nation = nation
+            self.res = res
+            self.building = building
+            building.improving = True
+    
+    def thick(self):
+        self.thicks -= 1
+        if self.thicks > 0:
+            return
+        self.nation.current_busy_population_count -= self.building.workers_needed()
+        self.building.improving = False

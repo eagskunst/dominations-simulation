@@ -1,4 +1,5 @@
 animal_types = ["Bunny", "Fox", "Deer", "Bear"]
+building_types = ["Gold", "Food", "House", "Attack", "Defense"]
 
 class Animal:
     
@@ -83,3 +84,39 @@ class AnimalFactory:
             return Bear()
         else:
             raise RuntimeError()
+
+class Building:
+
+    def __init__(self, type: str, level: int=1) -> None:
+        self.type = type
+        self.level = level
+        self.improving = False
+        pass
+
+    def workers_needed() -> int:
+        pass
+
+class GoldBuilding(Building):
+
+    def workers_needed(self) -> int:
+        return self.level * 2
+    
+class FoodBuilding(Building):
+
+    def workers_needed(self) -> int:
+        return self.level * 3
+
+class HouseBuilding(Building):
+
+    def workers_needed(self) -> int:
+        return self.level
+    
+class BuildingFactory:
+
+    def create(building_type: str) -> Building:
+        if building_type == "Gold":
+            return GoldBuilding(building_type)
+        elif building_type == "Food":
+            return FoodBuilding(building_type)
+        elif building_type == "House":
+            return HouseBuilding(building_type)
