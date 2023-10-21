@@ -219,3 +219,8 @@ class ImproveBuilding(Event):
             return
         self.nation.current_busy_population_count -= self.building.workers_needed()
         self.building.improving = False
+
+class AttackEnemiesEvent(Event):
+
+    def __init__(self) -> None:
+        super().__init__()

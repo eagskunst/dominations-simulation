@@ -106,7 +106,28 @@ class EnemyNation():
     attack_coefficient: float
     defense_units_coefficient: float
     defense_buildings_coefficient: float
-    gold_per_combat: float
-    food_per_combat: float
-    units_per_combat: int
+    gold_per_combat_mean: int
+    gold_per_combat_std: int
+    food_per_combat_mean: int
+    food_per_combat_std: int
+    units_per_combat_mean: int
+    units_per_combat_std: int
     attacks_risk_rate: float
+    food_per_combat: int = 0
+    gold_per_combat: int = 0
+    units_per_combat: int = 0
+
+    def update_attacks_risk_rate(self, resources):
+        if resources.food_count <= 0 or resources.gold_count <= 0:
+            self.attacks_risk_rate += 0.01
+        else:
+            self.attacks_risk_rate = max(0.01, self.attacks_risk_rate - (resources.food_count + resources.gold_count) * 0.0001)
+    
+    def update_gold_per_combat(self):
+        self.gold_per_combat = int(np.random.normal(self.gold_per_combat_mean, self.gold_per_combat_std))
+    
+    def update_food_per_combat(self):
+        self.food_per_combat = int(np.random.normal(self.food_per_combat_mean, self.food_per_combat_std))
+    
+    def update_unit_per_combat(self):
+        self.units_per_combat = int(np.random.normal(self.units_per_combat_mean, self.units_per_combat_std))
