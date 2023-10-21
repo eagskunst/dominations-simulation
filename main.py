@@ -10,12 +10,13 @@ def main():
         used_space=0,
         animal_spawn_rate=0.4,
         gold_mine_spawn_rate=0.4,
-        roads_count=10,
+        roads_count=8,
         population_count=10,
-        road_gold_generation=0.4,
+        road_gold_generation=4,
         hunt_time=5,
         mine_time=2,
-        current_busy_population_count=0
+        current_busy_population_count=0,
+        buildings_count=2,
     )
     resources = Resources(
         food_count=10,
