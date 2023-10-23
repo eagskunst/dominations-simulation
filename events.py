@@ -222,5 +222,5 @@ class ImproveBuilding(Event):
 
 class AttackEnemiesEvent(Event):
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, enemy_nation: EnemyNation):
+        pass

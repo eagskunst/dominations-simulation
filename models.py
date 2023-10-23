@@ -19,7 +19,7 @@ class Nation():
     mine_time: int
     current_busy_population_count: int
     houses_count: int
-    animals: list[Animal] = []
+    animals = []
 
     def advance_time(self):
         self.current_time += 1

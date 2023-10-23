@@ -16,13 +16,12 @@ def main():
         hunt_time=5,
         mine_time=2,
         current_busy_population_count=0,
-        buildings_count=2,
+        houses_count=1
     )
     resources = Resources(
         food_count=10,
         gold_count=100,
-        gold_buildings_count=2,
-        food_buildings_count=2
+        gold_food_buidings=[]
     )
     handler = EventHandler(nation)
     nation.mine_gold(handler, resources)
