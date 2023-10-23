@@ -131,5 +131,5 @@ class EnemyNation():
     def update_food_per_combat(self):
         self.food_per_combat = int(np.random.normal(self.food_per_combat_mean, self.food_per_combat_std))
     
-    def update_unit_per_combat(self):
+    def update_units_per_combat(self):
         self.units_per_combat = int(np.random.normal(self.units_per_combat_mean, self.units_per_combat_std))
