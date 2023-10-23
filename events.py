@@ -4,13 +4,13 @@ from entities import Animal, BuildingFactory, Building, GoldBuilding, HouseBuild
 class Event:
 
     def __init__(self) -> None:
-        self.thicks = 0
+        self.ticks = 0
 
-    def thick(self):
+    def tick(self):
         pass
 
     def is_finished(self) -> bool:
-        return self.thicks <= 0
+        return self.ticks <= 0
 
 class MineGoldEvent(Event):
 
@@ -21,17 +21,17 @@ class MineGoldEvent(Event):
         #todo verificar si hay minas
         super().__init__()
         self.nation = nation
-        self.thicks = nation.mine_time
+        self.ticks = nation.mine_time
         self.resources = resources
         if (nation.current_busy_population_count 
             + MineGoldEvent.NEEDED_WORKERS >= nation.population_count):
             print("Can not start mine gold event because there is not enough available population")
-            self.thicks = 0
+            self.ticks = 0
         nation.current_busy_population_count += MineGoldEvent.NEEDED_WORKERS
     
-    def thick(self):
-        self.thicks -= 1
-        if self.thicks > 0:
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks > 0:
             return
         print("Gold mined. Disposing resources.")
         self.nation.current_busy_population_count -= MineGoldEvent.NEEDED_WORKERS
@@ -44,16 +44,16 @@ class CollectRoadGold(Event):
         super().__init__()
         self.nation = nation
         self.resource = resources
-        self.thicks = nation.roads_count
+        self.ticks = nation.roads_count
         self.resources = resources
         self.gold_earned = 0
         if self.nation.roads_count <= 0:
             print("No hay caminos para recolectar")
-            self.thicks = 0
+            self.ticks = 0
     
-    def thick(self):
-        self.thicks -= 1
-        if self.thicks <= 0:
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks <= 0:
             print("Terminada la recolección de caminos")
             print(f"Oro generado: {self.gold_earned}")
             return
@@ -64,41 +64,41 @@ class BuildRoadEvent(Event):
 
     def __init__(self, nation: Nation):
         super().__init__()
-        self.thicks = 1
+        self.ticks = 1
         self.nation = nation
         if nation.roads_count + 4 > nation.buildings_count * 4:
             print("You must build more buildings before building more roads")
             self.is_finished = True
-            self.thicks = 0
+            self.ticks = 0
     
-    def thick(self):
-        self.thicks -= 1
-        if self.thicks > 0:
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks > 0:
             return
         self.nation.roads_count += 4
         print("Roads built")
 
 class OpenSpaceEvent(Event):
 
-    SPACE_THICKS = 5
+    SPACE_TICKS = 5
     NEEDED_WORKERS = 3
 
     def __init__(self, nation: Nation):
         super().__init__()
         self.nation = nation
-        self.thicks = OpenSpaceEvent.SPACE_THICKS
+        self.ticks = OpenSpaceEvent.SPACE_TICKS
         if nation.not_worked_space < 0:
             print("There is no space for new buildings")
-            self.thicks = 0
+            self.ticks = 0
         elif (nation.current_busy_population_count +
               OpenSpaceEvent.NEEDED_WORKERS > nation.population_count):
             print("There is not enough population for doing this work")
-            self.thicks = 0
+            self.ticks = 0
         self.nation.current_busy_population_count += OpenSpaceEvent.NEEDED_WORKERS
     
-    def thick(self):
-        self.thicks -= 1
-        if self.thicks > 0:
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks > 0:
             return
         self.nation.available_space += 1
         self.nation.current_busy_population_count -= OpenSpaceEvent.NEEDED_WORKERS
@@ -115,20 +115,20 @@ class HuntAnimalEvent(Event):
         )
         if animal == None:
             print(f"There is no {animal_name} in the nation currently. Animals: {nation.animals}")
-            self.thicks = 0
+            self.ticks = 0
         else:
             if nation.current_busy_population_count + animal.workers_needed() > nation.population_count:
                 print("There is not enough population for doing this work")
-                self.thicks = 0
+                self.ticks = 0
             else:
-                self.thicks = animal.hunt_time()
+                self.ticks = animal.hunt_time()
                 self.animal = animal
                 self.nation.current_busy_population_count += self.animal.workers_needed()
                 self.nation.animals.remove(animal)
     
-    def thick(self):
-        self.thicks -= 1
-        if self.thicks > 0:
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks > 0:
             return
         #todo revisar si puede almacenar mas comida
         self.resources.food_count += self.animal.food_given()
@@ -147,29 +147,29 @@ class BuildBuilding(Event):
         building = BuildingFactory().create(building_type)
         if nation.current_busy_population_count + building.workers_needed() > nation.population_count:
             print("There is not enough population for doing this work")
-            self.thicks = -1
+            self.ticks = -1
         gold_cost, food_cost = rd.calculate_building_cost(building_type, seed) 
         if food_cost > res.food_count:
             print("There is not enough food for doing this work")
-            self.thicks = -1
+            self.ticks = -1
         elif gold_cost > res.gold_count:
             print("There is not enough gold for doing this work")
-            self.thicks = -1
+            self.ticks = -1
         
-        if self.thicks == -1:
-            self.thicks = 0
+        if self.ticks == -1:
+            self.ticks = 0
         else:
             res.food_count -= food_cost
             res.gold_count -= gold_cost
             nation.current_busy_population_count += building.workers_needed()
-            self.thicks = rd.bulding_build_time
+            self.ticks = rd.bulding_build_time
             self.nation = nation
             self.res = res
             self.building = building
     
-    def thick(self):
-        self.thicks -= 1
-        if self.thicks > 0:
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks > 0:
             return
         self.nation.current_busy_population_count -= self.building.workers_needed()
         if type(self.building) is HouseBuilding:
@@ -186,36 +186,36 @@ class ImproveBuilding(Event):
         building.level += 1
         if nation.current_busy_population_count + building.workers_needed() > nation.population_count:
             print("There is not enough population for doing this work")
-            self.thicks = -1
+            self.ticks = -1
             building.level -= 1
         elif building.level > rd.max_building_improvements:
             print("You can not upgrade this building to the next level before changing eras")
-            self.thicks = -1
+            self.ticks = -1
             building.level -= 1
         gold_cost, food_cost = rd.calculate_improvement_cost(building.type, seed) 
         if food_cost > res.food_count:
             print("There is not enough food for doing this work")
-            self.thicks = -1
+            self.ticks = -1
             building.level -= 1
         elif gold_cost > res.gold_count:
             print("There is not enough gold for doing this work")
-            self.thicks = -1
+            self.ticks = -1
             building.level -= 1
-        if self.thicks == -1:
-            self.thicks = 0
+        if self.ticks == -1:
+            self.ticks = 0
         else:
             res.food_count -= food_cost
             res.gold_count -= gold_cost
             nation.current_busy_population_count += building.workers_needed()
-            self.thicks = rd.building_improvement_time
+            self.ticks = rd.building_improvement_time
             self.nation = nation
             self.res = res
             self.building = building
             building.improving = True
     
-    def thick(self):
-        self.thicks -= 1
-        if self.thicks > 0:
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks > 0:
             return
         self.nation.current_busy_population_count -= self.building.workers_needed()
         self.building.improving = False

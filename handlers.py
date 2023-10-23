@@ -11,7 +11,7 @@ class EventHandler():
         removable_events = []
         self.nation.advance_time()
         for event in self.current_events:
-            event.thick()
+            event.tick()
             if event.is_finished():
                 removable_events.append(event)
         for event in removable_events:

@@ -27,7 +27,7 @@ def main():
     handler = EventHandler(nation)
     nation.mine_gold(handler, resources)
     while True:
-        print("new thick")
+        print("new tick")
         handler.advance_time()
         input()
 
