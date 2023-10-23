@@ -1,5 +1,5 @@
 from models import Nation, Resources, Combat, ResearchAndDevelopment, EnemyNation
-from entities import Animal, BuildingFactory, Building, GoldBuilding, HouseBuilding, FoodBuilding
+from entities import Animal, BuildingFactory, Building, GoldBuilding, HouseBuilding, FoodBuilding, AnimalFactory, animal_types
 import numpy as np
 import sys
 
@@ -20,7 +20,6 @@ class MineGoldEvent(Event):
     NEEDED_WORKERS = 2
 
     def __init__(self, nation: Nation, resources: Resources):
-        #todo verificar si hay minas
         super().__init__()
         self.nation = nation
         self.ticks = nation.mine_time
@@ -318,3 +317,21 @@ class SpawnMineEvent(Event):
         if random_prob >= self.nation.gold_mine_spawn_rate:
             print("Gold mine spawned")
             self.nation.gold_mines += 1
+
+class SpawnAnimalEvent(Event):
+
+    def __init__(self, nation: Nation):
+        super().__init__()
+        self.ticks = sys.maxsize
+        self.nation = nation
+    
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks <= 0:
+            self.ticks = sys.maxsize
+        random_prob = np.random.random()
+        if random_prob >= self.nation.animal_spawn_rate:
+            animal_name = np.random.choice(animal_types)
+            animal = AnimalFactory().create(animal_name)
+            self.nation.animals.append(animal)
+            print(f"{animal_name} spawned")

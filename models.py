@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import events
-from entities import Animal, building_types, Building
+from entities import  building_types, Building
 import numpy as np
 
 @dataclass
