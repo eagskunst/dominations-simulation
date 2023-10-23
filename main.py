@@ -16,7 +16,8 @@ def main():
         hunt_time=5,
         mine_time=2,
         current_busy_population_count=0,
-        houses_count=1
+        houses_count=1,
+        gold_mines=5
     )
     resources = Resources(
         food_count=10,

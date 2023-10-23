@@ -1,5 +1,7 @@
 from models import Nation, Resources, Combat, ResearchAndDevelopment, EnemyNation
 from entities import Animal, BuildingFactory, Building, GoldBuilding, HouseBuilding, FoodBuilding
+import numpy as np
+import sys
 
 class Event:
 
@@ -23,11 +25,14 @@ class MineGoldEvent(Event):
         self.nation = nation
         self.ticks = nation.mine_time
         self.resources = resources
-        if (nation.current_busy_population_count 
+        if nation.gold_mines <= 0:
+            print("There is no gold mines")
+        elif (nation.current_busy_population_count 
             + MineGoldEvent.NEEDED_WORKERS >= nation.population_count):
             print("Can not start mine gold event because there is not enough available population")
             self.ticks = 0
-        nation.current_busy_population_count += MineGoldEvent.NEEDED_WORKERS
+        else:
+            nation.current_busy_population_count += MineGoldEvent.NEEDED_WORKERS
     
     def tick(self):
         self.ticks -= 1
@@ -36,7 +41,7 @@ class MineGoldEvent(Event):
         print("Gold mined. Disposing resources.")
         self.nation.current_busy_population_count -= MineGoldEvent.NEEDED_WORKERS
         self.resources.gold_count += MineGoldEvent.GOLD_PER_MINE
-        self.finished = True
+        self.nation.gold_mines -= 1
 
 class CollectRoadGold(Event):
 
@@ -144,6 +149,7 @@ class HuntAnimalEvent(Event):
 class BuildBuilding(Event):
 
     def __init__(self, nation: Nation, rd: ResearchAndDevelopment, res: Resources, building_type: str, seed: int):
+        super().__init__()
         building = BuildingFactory().create(building_type)
         if nation.current_busy_population_count + building.workers_needed() > nation.population_count:
             print("There is not enough population for doing this work")
@@ -181,6 +187,7 @@ class BuildBuilding(Event):
 class ImproveBuilding(Event):
 
     def __init__(self, rd: ResearchAndDevelopment, nation: Nation, res: Resources, building: Building, seed):
+        super().__init__()
         if type(building) is HouseBuilding:
             print("You can't improve houses")
         building.level += 1
@@ -222,5 +229,92 @@ class ImproveBuilding(Event):
 
 class AttackEnemiesEvent(Event):
 
-    def __init__(self, enemy_nation: EnemyNation):
-        pass
+    def __init__(self, enemy_nation: EnemyNation, combat: Combat, res: Resources):
+        super().__init__()
+        if combat.attack_units_count <= 0 or combat.attack_buildings_count <= 0:
+            print("You don't have troops")
+            self.ticks = -1
+        elif combat.is_resting:
+            print("Your troops are resting")
+            self.ticks = -1
+        else:
+            self.ticks = 1
+            self.enemy_nation = enemy_nation
+            self.combat = combat
+            self.res = res
+    
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks > 0 or self.ticks <= -1:
+            return
+        print("Starting attack to enemy nation")
+        defense_rate = (self.enemy_nation.defense_units_coefficient + self.enemy_nation.defense_units_coefficient) / 2
+        if defense_rate >= self.combat.attack_force_rate:
+            print("Attack failed. Enemy nation won.")
+            self.combat.attack_units_count = 0
+        else:
+            print("Attack success. Our nation won!")
+            max_attack_lost = max(1, self.combat.attack_units_count - 1)
+            lost_units = np.random.randint(low=1, high=max_attack_lost)
+            print(f"Our nation lost {lost_units} unit/s")
+            self.combat.attack_units_count -= lost_units
+            self.combat.resting = True
+            new_food = self.enemy_nation.food_per_combat
+            new_gold = self.enemy_nation.gold_per_combat
+            self.res.food_count += new_food
+            self.res.gold_count += new_gold
+            print(f"Added {new_food} food and {new_gold} gold")
+
+class RestFromAttackEvent(Event):
+
+    REST_TICKS = 20
+
+    def __init__(self, combat: Combat):
+        super().__init__()
+        self.ticks = RestFromAttackEvent.REST_TICKS
+        self.combat = combat
+    
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks > 0:
+            return
+        print("Your troops are not longer resting. You can attack again")
+        self.combat.resting = False
+
+class DefendFromEnemiesEvent(Event):
+
+    def __init__(self, enemy_nation: EnemyNation, combat: Combat, res: Resources):
+        super().__init__()
+        self.enemy_nation = enemy_nation
+        self.combat = combat
+        self.res = res
+        self.ticks = 1
+    
+    def tick(self):
+        if self.combat.defense_units_count >= self.enemy_nation.attack_coefficient:
+            print("Defend success!")
+            self.combat.defense_units_count = np.random.randint(low=1, high=self.combat.defense_units_count - 1)
+        else:
+            print("Defense failed")
+            self.combat.defense_units_count = 0
+            lost_food = min(self.res.food_count, self.enemy_nation.food_per_combat)
+            lost_gold = min(self.res.gold_count, self.enemy_nation.gold_per_combat)
+            self.res.food_count -= lost_food
+            self.res.gold_count -= lost_gold
+            print(f"We lost {lost_food} food and {lost_gold} gold")
+
+class SpawnMineEvent(Event):
+
+    def __init__(self, nation: Nation):
+        super().__init__()
+        self.ticks = sys.maxsize
+        self.nation = nation
+    
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks <= 0:
+            self.ticks = sys.maxsize
+        random_prob = np.random.random()
+        if random_prob >= self.nation.gold_mine_spawn_rate:
+            print("Gold mine spawned")
+            self.nation.gold_mines += 1

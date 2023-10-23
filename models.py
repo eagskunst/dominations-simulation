@@ -20,6 +20,7 @@ class Nation():
     current_busy_population_count: int
     houses_count: int
     animals = []
+    gold_mines: int
 
     def advance_time(self):
         self.current_time += 1
@@ -60,6 +61,7 @@ class Combat():
     attack_buildings_count: int
     attack_force_rate: float
     training_time: int
+    resting: bool = False
 
 @dataclass
 class ResearchAndDevelopment():
