@@ -273,9 +273,10 @@ class ImproveBuilding(Event):
     Methods:
         tick(): Advance the event by one tick.
     """
-    def __init__(self, rd: ResearchAndDevelopment, nation: Nation, res: Resources, building_name: str, seed):
+    def __init__(self, rd: ResearchAndDevelopment, nation: Nation, res: Resources, combat: Combat, building_name: str, seed):
         super().__init__()
         building: Building = None
+
         for b in res.gold_food_buildings:
             if b.type == building_name:
                 building = b
@@ -283,6 +284,23 @@ class ImproveBuilding(Event):
                     continue
                 else:
                     break
+
+        for b in combat.attack_buildings:
+            if b.type == building_name:
+                building = b
+                if b.level + 1 > rd.max_building_improvements or b.improving:
+                    continue
+                else:
+                    break
+        
+        for b in combat.defense_buildings:
+            if b.type == building_name:
+                building = b
+                if b.level + 1 > rd.max_building_improvements or b.improving:
+                    continue
+                else:
+                    break
+
         if building is None:
             raise EventAdditionError(f"There is no {building_name} in the nation currently.")
 

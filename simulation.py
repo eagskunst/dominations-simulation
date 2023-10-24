@@ -108,7 +108,7 @@ class Simulation:
             self.research_and_dev.create_building(event_handler, self.nation, self.resources, self.combat, building_type, self.seed)
         elif user_input == "ImproveBuilding":
             building_name = input("Enter the building to improve: ")
-            self.research_and_dev.improve_building(event_handler, self.nation, self.resources, building_name, self.seed)
+            self.research_and_dev.improve_building(event_handler, self.nation, self.resources, self.combat, building_name, self.seed)
         elif user_input == "AttackEnemies":
             self.enemy_nation.update_attacks_risk_rate(self.resources)
             event = events.AttackEnemiesEvent(self.enemy_nation, self.combat, self.resources)

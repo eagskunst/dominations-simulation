@@ -214,8 +214,8 @@ class ResearchAndDevelopment():
         event = events.BuildBuilding(nation, self, res, combat, building_type,  seed)
         event_handler.add_event(event)
     
-    def improve_building(self, event_handler, nation, res, building_name, seed: int):
-        event = events.ImproveBuilding(self, nation, res, building_name, seed)
+    def improve_building(self, event_handler, nation, res, combat, building_name, seed: int):
+        event = events.ImproveBuilding(self, nation, res, combat, building_name, seed)
         event_handler.add_event(event)
     
     def show_status(self):
