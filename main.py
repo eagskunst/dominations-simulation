@@ -47,7 +47,7 @@ def create_default_yml_file():
     """
     nation = Nation("Sample Nation", 0, 100, 20, 80, 0.5, 0.3, 50, 200, 10, 5, 5, 50, 10, [])
     resources = Resources(100, 50, [])
-    combat = Combat(200, 150, 300, 20, 0.7, 30, False)
+    combat = Combat(200, 100, 300, 250, 10, 7, 400, 300, 6, False)
     research_and_dev = ResearchAndDevelopment(2, 5, 15, 20)
     enemy_nation = EnemyNation(0.6, 0.8, 0.7, 100, 10, 50, 5, 30, 10, 20, 0, 0, 0)
 

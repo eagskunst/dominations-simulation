@@ -133,21 +133,27 @@ class Combat():
     """
     attack_units_count: int
     defense_units_count: int
-    max_combat_units_count: int
+    max_attack_units_count: int
+    max_defense_units_count: int
     attack_buildings_count: int
     defense_buildings_count: int
     attack_force_rate: float
     defense_force_rate: float
     training_time: int
     resting: bool = False
+    attack_buildings: list[Building]
+    defense_buildings: list[Building]
 
     def show_status(self):
         status = "Combat\n"
         status += f"Attack Units Count: {self.attack_units_count}\n"
         status += f"Defense Units Count: {self.defense_units_count}\n"
-        status += f"Max Combat Units Count: {self.max_combat_units_count}\n"
+        status += f"Max Attack Units Count: {self.max_attack_units_count}\n"
+        status += f"Max Defense Units Count: {self.max_defense_units_count}\n"
         status += f"Attack Buildings Count: {self.attack_buildings_count}\n"
+        status += f"Defense Buildings Count: {self.defense_buildings_count}\n"
         status += f"Attack Force Rate: {self.attack_force_rate}\n"
+        status += f"Defense Force Rate: {self.defense_force_rate}\n"
         status += f"Training Time: {self.training_time}\n"
         status += f"Resting: {self.resting}\n"
         return status

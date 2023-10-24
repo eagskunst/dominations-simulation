@@ -243,12 +243,13 @@ class BuildBuilding(Event):
             self.res.gold_food_buildings.append(self.building)
         elif type(self.building) is AttackBuilding:
             self.combat.attack_buildings_count += 1
-            self.combat.max_combat_units_count += 20
+            self.combat.max_attack_units_count += 20
             self.combat.training_time += 1
             self.combat.calculate_attack_and_defense_rates()
         elif type(self.building) is DefenseBuilding:
             self.combat.defense_buildings_count += 1
             self.combat.max_defense_units_count += 20
+            self.combat.training_time += 1
             self.combat.calculate_attack_and_defense_rates()
         
         self.nation.available_space -= 1
