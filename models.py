@@ -135,7 +135,9 @@ class Combat():
     defense_units_count: int
     max_combat_units_count: int
     attack_buildings_count: int
+    defense_buildings_count: int
     attack_force_rate: float
+    defense_force_rate: float
     training_time: int
     resting: bool = False
 
@@ -149,6 +151,10 @@ class Combat():
         status += f"Training Time: {self.training_time}\n"
         status += f"Resting: {self.resting}\n"
         return status
+    
+    def calculate_attack_and_defense_rates(self):
+        self.attack_force_rate = (self.attack_units_count * 1.5) + (self.attack_buildings_count * 10)
+        self.defense_force_rate = (self.defense_units_count * 0.8) + (self.defense_buildings * 12)
 
 @dataclass
 class ResearchAndDevelopment():
@@ -198,8 +204,8 @@ class ResearchAndDevelopment():
                 type_cost = (int(gold_cost), int(food_cost))
         return type_cost
     
-    def create_building(self, event_handler, nation, res, building_type: str, seed: int):
-        event = events.BuildBuilding(nation, self, res, building_type, seed)
+    def create_building(self, event_handler, nation, res, combat: Combat, building_type: str, seed: int):
+        event = events.BuildBuilding(nation, self, res, combat, building_type,  seed)
         event_handler.add_event(event)
     
     def improve_building(self, event_handler, nation, res, building_name, seed: int):

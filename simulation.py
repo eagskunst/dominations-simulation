@@ -105,7 +105,7 @@ class Simulation:
             self.nation.hunt_animal(event_handler, animal_name, self.resources)
         elif user_input == "BuildBuilding":
             building_type = input("Enter the building type: ")
-            self.research_and_dev.create_building(event_handler, self.nation, self.resources, building_type, self.seed)
+            self.research_and_dev.create_building(event_handler, self.nation, self.resources, self.combat, building_type, self.seed)
         elif user_input == "ImproveBuilding":
             building_name = input("Enter the building to improve: ")
             self.research_and_dev.improve_building(event_handler, self.nation, self.resources, building_name, self.seed)

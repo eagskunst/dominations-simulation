@@ -2,7 +2,7 @@ from __future__ import annotations  # <-- Additional import.
 import typing
 if typing.TYPE_CHECKING:
     from models import Nation, Resources, Combat, ResearchAndDevelopment, EnemyNation
-from entities import Animal, BuildingFactory, Building, GoldBuilding, HouseBuilding, FoodBuilding, AnimalFactory, animal_types
+from entities import Animal, BuildingFactory, Building, GoldBuilding, HouseBuilding, FoodBuilding, AnimalFactory, animal_types, AttackBuilding, DefenseBuilding
 import numpy as np
 import sys
 from utils import EventAdditionError
@@ -208,7 +208,7 @@ class BuildBuilding(Event):
     Methods:
         tick(): Advance the event by one tick.
     """
-    def __init__(self, nation: Nation, rd: ResearchAndDevelopment, res: Resources, building_type: str, seed: int):
+    def __init__(self, nation: Nation, rd: ResearchAndDevelopment, res: Resources, combat: Combat, building_type: str, seed: int):
         super().__init__()
         building = BuildingFactory().create(building_type)
         if nation.current_busy_population_count + building.workers_needed() > nation.population_count:
@@ -241,6 +241,16 @@ class BuildBuilding(Event):
             self.nation.population_count += 2
         elif type(self.building) is FoodBuilding or type(self.building) is GoldBuilding:
             self.res.gold_food_buildings.append(self.building)
+        elif type(self.building) is AttackBuilding:
+            self.combat.attack_buildings_count += 1
+            self.combat.max_combat_units_count += 20
+            self.combat.training_time += 1
+            self.combat.calculate_attack_and_defense_rates()
+        elif type(self.building) is DefenseBuilding:
+            self.combat.defense_buildings_count += 1
+            self.combat.max_defense_units_count += 20
+            self.combat.calculate_attack_and_defense_rates()
+        
         self.nation.available_space -= 1
         if self.nation.available_space < 0:
             self.nation.available_space = 0
