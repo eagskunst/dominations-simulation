@@ -1,0 +1,47 @@
+combat:
+  attack_buildings_count: 20
+  attack_force_rate: 0.7
+  attack_units_count: 200
+  defense_units_count: 150
+  max_combat_units_count: 300
+  resting: false
+  training_time: 30
+enemy_nation:
+  attack_coefficient: 0.6
+  attacks_risk_rate: 20
+  defense_buildings_coefficient: 0.7
+  defense_units_coefficient: 0.8
+  food_per_combat: 0
+  food_per_combat_mean: 50
+  food_per_combat_std: 5
+  gold_per_combat: 0
+  gold_per_combat_mean: 100
+  gold_per_combat_std: 10
+  units_per_combat: 0
+  units_per_combat_mean: 30
+  units_per_combat_std: 10
+nation:
+  animal_spawn_rate: 0.5
+  available_space: 100
+  current_busy_population_count: 50
+  current_time: 0
+  gold_mine_spawn_rate: 0.3
+  gold_mines: []
+  houses_count: 10
+  hunt_time: 5
+  mine_time: 5
+  name: Sample Nation
+  not_worked_space: 20
+  population_count: 200
+  road_gold_generation: 10
+  roads_count: 50
+  used_space: 80
+research_and_dev:
+  building_improvement_time: 20
+  bulding_build_time: 15
+  era_level: 2
+  max_building_improvements: 5
+resources:
+  food_count: 100
+  gold_count: 50
+  gold_food_buidings: []

@@ -1,16 +1,19 @@
 from models import Nation, Resources, Combat, ResearchAndDevelopment, EnemyNation
-from entities import Animal, BuildingFactory, Building, GoldBuilding, HouseBuilding, FoodBuilding
+from entities import Animal, BuildingFactory, Building, GoldBuilding, HouseBuilding, FoodBuilding, AnimalFactory, animal_types
+import numpy as np
+import sys
+from utils import EventAdditionError
 
 class Event:
 
     def __init__(self) -> None:
-        self.thicks = 0
+        self.ticks = 0
 
-    def thick(self):
+    def tick(self):
         pass
 
     def is_finished(self) -> bool:
-        return self.thicks <= 0
+        return self.ticks <= 0
 
 class MineGoldEvent(Event):
 
@@ -18,25 +21,28 @@ class MineGoldEvent(Event):
     NEEDED_WORKERS = 2
 
     def __init__(self, nation: Nation, resources: Resources):
-        #todo verificar si hay minas
         super().__init__()
         self.nation = nation
-        self.thicks = nation.mine_time
+        self.ticks = nation.mine_time
         self.resources = resources
-        if (nation.current_busy_population_count 
+        if nation.gold_mines <= 0:
+            raise EventAdditionError("There is no gold mines")
+        elif (nation.current_busy_population_count 
             + MineGoldEvent.NEEDED_WORKERS >= nation.population_count):
-            print("Can not start mine gold event because there is not enough available population")
-            self.thicks = 0
-        nation.current_busy_population_count += MineGoldEvent.NEEDED_WORKERS
+            raise EventAdditionError("Can not start mine gold event because there is not enough available population")
+        else:
+            nation.current_busy_population_count += MineGoldEvent.NEEDED_WORKERS
     
-    def thick(self):
-        self.thicks -= 1
-        if self.thicks > 0:
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks > 0:
             return
         print("Gold mined. Disposing resources.")
         self.nation.current_busy_population_count -= MineGoldEvent.NEEDED_WORKERS
         self.resources.gold_count += MineGoldEvent.GOLD_PER_MINE
-        self.finished = True
+        self.nation.gold_mines -= 1
+        if self.nation.gold_mines < 0:
+            self.nation.gold_mines = 0
 
 class CollectRoadGold(Event):
 
@@ -44,16 +50,15 @@ class CollectRoadGold(Event):
         super().__init__()
         self.nation = nation
         self.resource = resources
-        self.thicks = nation.roads_count
+        self.ticks = nation.roads_count
         self.resources = resources
         self.gold_earned = 0
         if self.nation.roads_count <= 0:
-            print("No hay caminos para recolectar")
-            self.thicks = 0
+            raise EventAdditionError("No hay caminos para recolectar")
     
-    def thick(self):
-        self.thicks -= 1
-        if self.thicks <= 0:
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks <= 0:
             print("Terminada la recolección de caminos")
             print(f"Oro generado: {self.gold_earned}")
             return
@@ -64,44 +69,45 @@ class BuildRoadEvent(Event):
 
     def __init__(self, nation: Nation):
         super().__init__()
-        self.thicks = 1
+        self.ticks = 1
         self.nation = nation
         if nation.roads_count + 4 > nation.buildings_count * 4:
-            print("You must build more buildings before building more roads")
-            self.is_finished = True
-            self.thicks = 0
+            raise EventAdditionError("You must build more buildings before building more roads")
     
-    def thick(self):
-        self.thicks -= 1
-        if self.thicks > 0:
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks > 0:
             return
         self.nation.roads_count += 4
         print("Roads built")
 
 class OpenSpaceEvent(Event):
 
-    SPACE_THICKS = 5
+    SPACE_TICKS = 5
     NEEDED_WORKERS = 3
 
     def __init__(self, nation: Nation):
         super().__init__()
         self.nation = nation
-        self.thicks = OpenSpaceEvent.SPACE_THICKS
-        if nation.not_worked_space < 0:
-            print("There is no space for new buildings")
-            self.thicks = 0
+        self.ticks = OpenSpaceEvent.SPACE_TICKS
+        if nation.not_worked_space <= 0:
+            raise EventAdditionError("There is no space for new buildings")
         elif (nation.current_busy_population_count +
               OpenSpaceEvent.NEEDED_WORKERS > nation.population_count):
-            print("There is not enough population for doing this work")
-            self.thicks = 0
+            raise EventAdditionError("There is not enough population for doing this work")
         self.nation.current_busy_population_count += OpenSpaceEvent.NEEDED_WORKERS
     
-    def thick(self):
-        self.thicks -= 1
-        if self.thicks > 0:
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks > 0:
             return
         self.nation.available_space += 1
         self.nation.current_busy_population_count -= OpenSpaceEvent.NEEDED_WORKERS
+        if (self.nation.current_busy_population_count < 0):
+            self.nation.current_busy_population_count = 0
+        self.nation.not_worked_space -= 1
+        if (self.nation.not_worked_space < 0):
+            self.nation.not_worked_space = 0
 
 class HuntAnimalEvent(Event):
 
@@ -114,21 +120,19 @@ class HuntAnimalEvent(Event):
             lambda animal: animal.name() == animal_name
         )
         if animal == None:
-            print(f"There is no {animal_name} in the nation currently. Animals: {nation.animals}")
-            self.thicks = 0
+            raise EventAdditionError(f"There is no {animal_name} in the nation currently. Animals: {nation.animals}")
         else:
             if nation.current_busy_population_count + animal.workers_needed() > nation.population_count:
-                print("There is not enough population for doing this work")
-                self.thicks = 0
+                raise EventAdditionError("There is not enough population for doing this work")
             else:
-                self.thicks = animal.hunt_time()
+                self.ticks = animal.hunt_time()
                 self.animal = animal
                 self.nation.current_busy_population_count += self.animal.workers_needed()
                 self.nation.animals.remove(animal)
     
-    def thick(self):
-        self.thicks -= 1
-        if self.thicks > 0:
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks > 0:
             return
         #todo revisar si puede almacenar mas comida
         self.resources.food_count += self.animal.food_given()
@@ -144,32 +148,31 @@ class HuntAnimalEvent(Event):
 class BuildBuilding(Event):
 
     def __init__(self, nation: Nation, rd: ResearchAndDevelopment, res: Resources, building_type: str, seed: int):
+        super().__init__()
         building = BuildingFactory().create(building_type)
         if nation.current_busy_population_count + building.workers_needed() > nation.population_count:
-            print("There is not enough population for doing this work")
-            self.thicks = -1
+            raise EventAdditionError("There is not enough population for doing this work")
         gold_cost, food_cost = rd.calculate_building_cost(building_type, seed) 
         if food_cost > res.food_count:
-            print("There is not enough food for doing this work")
-            self.thicks = -1
+            raise EventAdditionError("There is not enough food for doing this work")
         elif gold_cost > res.gold_count:
-            print("There is not enough gold for doing this work")
-            self.thicks = -1
-        
-        if self.thicks == -1:
-            self.thicks = 0
-        else:
-            res.food_count -= food_cost
-            res.gold_count -= gold_cost
-            nation.current_busy_population_count += building.workers_needed()
-            self.thicks = rd.bulding_build_time
-            self.nation = nation
-            self.res = res
-            self.building = building
+            raise EventAdditionError("There is not enough gold for doing this work")
     
-    def thick(self):
-        self.thicks -= 1
-        if self.thicks > 0:
+        res.food_count -= food_cost
+        if res.food_count < 0:
+            res.food_count = 0
+        res.gold_count -= gold_cost
+        if res.gold_count < 0:
+            res.gold_count = 0
+        nation.current_busy_population_count += building.workers_needed()
+        self.ticks = rd.bulding_build_time
+        self.nation = nation
+        self.res = res
+        self.building = building
+    
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks > 0:
             return
         self.nation.current_busy_population_count -= self.building.workers_needed()
         if type(self.building) is HouseBuilding:
@@ -177,45 +180,172 @@ class BuildBuilding(Event):
             self.nation.population_count += 2
         elif type(self.building) is FoodBuilding or type(self.building) is GoldBuilding:
             self.res.gold_food_buidings.append(self.building)
+        self.nation.available_space -= 1
+        if self.nation.available_space < 0:
+            self.nation.available_space = 0
+        self.nation.used_space += 1
 
 class ImproveBuilding(Event):
 
     def __init__(self, rd: ResearchAndDevelopment, nation: Nation, res: Resources, building: Building, seed):
+        super().__init__()
         if type(building) is HouseBuilding:
             print("You can't improve houses")
         building.level += 1
         if nation.current_busy_population_count + building.workers_needed() > nation.population_count:
-            print("There is not enough population for doing this work")
-            self.thicks = -1
             building.level -= 1
+            raise EventAdditionError("There is not enough population for doing this work")
         elif building.level > rd.max_building_improvements:
-            print("You can not upgrade this building to the next level before changing eras")
-            self.thicks = -1
             building.level -= 1
+            raise EventAdditionError("You can not upgrade this building to the next level before changing eras")
         gold_cost, food_cost = rd.calculate_improvement_cost(building.type, seed) 
         if food_cost > res.food_count:
-            print("There is not enough food for doing this work")
-            self.thicks = -1
             building.level -= 1
+            raise EventAdditionError("There is not enough food for doing this work")
         elif gold_cost > res.gold_count:
-            print("There is not enough gold for doing this work")
-            self.thicks = -1
-            building.level -= 1
-        if self.thicks == -1:
-            self.thicks = 0
-        else:
-            res.food_count -= food_cost
-            res.gold_count -= gold_cost
-            nation.current_busy_population_count += building.workers_needed()
-            self.thicks = rd.building_improvement_time
-            self.nation = nation
-            self.res = res
-            self.building = building
-            building.improving = True
+            raise EventAdditionError("There is not enough gold for doing this work")
+        res.food_count -= food_cost
+        if res.food_count < 0:
+            res.food_count = 0
+        res.gold_count -= gold_cost
+        if res.gold_count < 0:
+            res.gold_count = 0
+        nation.current_busy_population_count += building.workers_needed()
+        self.ticks = rd.building_improvement_time
+        self.nation = nation
+        self.res = res
+        self.building = building
+        building.improving = True
     
-    def thick(self):
-        self.thicks -= 1
-        if self.thicks > 0:
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks > 0:
             return
         self.nation.current_busy_population_count -= self.building.workers_needed()
         self.building.improving = False
+
+class AttackEnemiesEvent(Event):
+
+    def __init__(self, enemy_nation: EnemyNation, combat: Combat, res: Resources):
+        super().__init__()
+        if combat.attack_units_count <= 0 or combat.attack_buildings_count <= 0:
+            raise EventAdditionError("You don't have troops")
+        elif combat.resting:
+            raise EventAdditionError("Your troops are resting")
+        else:
+            self.ticks = 1
+            self.enemy_nation = enemy_nation
+            self.combat = combat
+            self.res = res
+    
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks > 0 or self.ticks <= -1:
+            return
+        print("Starting attack to enemy nation")
+        defense_rate = (self.enemy_nation.defense_units_coefficient + self.enemy_nation.defense_units_coefficient) / 2
+        if defense_rate >= self.combat.attack_force_rate:
+            print("Attack failed. Enemy nation won.")
+            self.combat.attack_units_count = 0
+        else:
+            print("Attack success. Our nation won!")
+            max_attack_lost = max(1, self.combat.attack_units_count - 1)
+            lost_units = np.random.randint(low=1, high=max_attack_lost)
+            print(f"Our nation lost {lost_units} unit/s")
+            self.combat.attack_units_count -= lost_units
+            self.combat.resting = True
+            new_food = self.enemy_nation.food_per_combat
+            new_gold = self.enemy_nation.gold_per_combat
+            self.res.food_count += new_food
+            self.res.gold_count += new_gold
+            print(f"Added {new_food} food and {new_gold} gold")
+
+class RestFromAttackEvent(Event):
+
+    REST_TICKS = 20
+
+    def __init__(self, combat: Combat):
+        super().__init__()
+        self.ticks = RestFromAttackEvent.REST_TICKS
+        self.combat = combat
+    
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks > 0:
+            return
+        print("Your troops are not longer resting. You can attack again")
+        self.combat.resting = False
+
+class DefendFromEnemiesEvent(Event):
+
+    def __init__(self, enemy_nation: EnemyNation, combat: Combat, res: Resources):
+        super().__init__()
+        self.enemy_nation = enemy_nation
+        self.combat = combat
+        self.res = res
+        self.ticks = 1
+    
+    def tick(self):
+        if self.combat.defense_units_count >= self.enemy_nation.attack_coefficient:
+            print("Defend success!")
+            self.combat.defense_units_count = np.random.randint(low=1, high=self.combat.defense_units_count - 1)
+        else:
+            print("Defense failed")
+            self.combat.defense_units_count = 0
+            lost_food = min(self.res.food_count, self.enemy_nation.food_per_combat)
+            lost_gold = min(self.res.gold_count, self.enemy_nation.gold_per_combat)
+            self.res.food_count -= lost_food
+            self.res.gold_count -= lost_gold
+            print(f"We lost {lost_food} food and {lost_gold} gold")
+
+class SpawnMineEvent(Event):
+
+    def __init__(self, nation: Nation):
+        super().__init__()
+        self.ticks = sys.maxsize
+        self.nation = nation
+    
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks <= 0:
+            self.ticks = sys.maxsize
+        random_prob = np.random.random()
+        if random_prob >= self.nation.gold_mine_spawn_rate:
+            print("Gold mine spawned")
+            self.nation.gold_mines += 1
+
+class SpawnAnimalEvent(Event):
+
+    def __init__(self, nation: Nation):
+        super().__init__()
+        self.ticks = sys.maxsize
+        self.nation = nation
+    
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks <= 0:
+            self.ticks = sys.maxsize
+        random_prob = np.random.random()
+        if random_prob >= self.nation.animal_spawn_rate:
+            animal_name = np.random.choice(animal_types)
+            animal = AnimalFactory().create(animal_name)
+            self.nation.animals.append(animal)
+            print(f"{animal_name} spawned")
+
+class UpdateRandomValuesEvent(Event):
+
+    def __init__(self, enemy_nation: EnemyNation, res: Resources):
+        super().__init__()
+        self.ticks = sys.maxsize
+        self.enemy_nation = enemy_nation
+        self.res = res
+    
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks <= 0:
+            self.ticks = sys.maxsize
+        self.enemy_nation.update_attacks_risk_rate(self.res)
+        self.enemy_nation.update_food_per_combat()
+        self.enemy_nation.update_gold_per_combat()
+        self.enemy_nation.update_units_per_combat()
+        
