@@ -1,5 +1,8 @@
+from __future__ import annotations  # <-- Additional import.
 from dataclasses import dataclass
-import events
+import typing
+if typing.TYPE_CHECKING:
+    import events
 from entities import  building_types, Building
 import numpy as np
 
@@ -130,8 +133,8 @@ class ResearchAndDevelopment():
         event = events.BuildBuilding(nation, self, res, building_type, seed)
         event_handler.add_event(event)
     
-    def improve_building(self, event_handler, nation, res, building, seed: int):
-        event = events.ImproveBuilding(self, nation, res, building, seed)
+    def improve_building(self, event_handler, nation, res, building_name, seed: int):
+        event = events.ImproveBuilding(self, nation, res, building_name, seed)
         event_handler.add_event(event)
     
     def show_status(self):

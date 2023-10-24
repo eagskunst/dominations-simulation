@@ -187,29 +187,41 @@ class BuildBuilding(Event):
 
 class ImproveBuilding(Event):
 
-    def __init__(self, rd: ResearchAndDevelopment, nation: Nation, res: Resources, building: Building, seed):
+    def __init__(self, rd: ResearchAndDevelopment, nation: Nation, res: Resources, building_name: str, seed):
         super().__init__()
-        if type(building) is HouseBuilding:
-            print("You can't improve houses")
-        building.level += 1
+        building: Building = None
+        for b in res.gold_food_buidings:
+            if b.type == building_name:
+                building = b
+                if b.level + 1 > rd.max_building_improvements or b.improving:
+                    continue
+                else:
+                    break
+        if building is None:
+            raise EventAdditionError(f"There is no {building_name} in the nation currently.")
+
+        if building.improving:
+            raise EventAdditionError(f"The {building.type} is already being improved.")
+
+        if building.level >= rd.max_building_improvements:
+            raise EventAdditionError("The building cannot be improved further before changing eras.")
+
         if nation.current_busy_population_count + building.workers_needed() > nation.population_count:
-            building.level -= 1
-            raise EventAdditionError("There is not enough population for doing this work")
-        elif building.level > rd.max_building_improvements:
-            building.level -= 1
-            raise EventAdditionError("You can not upgrade this building to the next level before changing eras")
-        gold_cost, food_cost = rd.calculate_improvement_cost(building.type, seed) 
+            raise EventAdditionError("There is not enough population for doing this work.")
+
+        gold_cost, food_cost = rd.calculate_improvement_cost(building.type, seed)
         if food_cost > res.food_count:
-            building.level -= 1
-            raise EventAdditionError("There is not enough food for doing this work")
+            raise EventAdditionError("There is not enough food for doing this work.")
         elif gold_cost > res.gold_count:
-            raise EventAdditionError("There is not enough gold for doing this work")
+            raise EventAdditionError("There is not enough gold for doing this work.")
+
         res.food_count -= food_cost
         if res.food_count < 0:
             res.food_count = 0
         res.gold_count -= gold_cost
         if res.gold_count < 0:
             res.gold_count = 0
+
         nation.current_busy_population_count += building.workers_needed()
         self.ticks = rd.building_improvement_time
         self.nation = nation
