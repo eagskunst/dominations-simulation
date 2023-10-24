@@ -20,8 +20,6 @@ class Animal:
 
 class Bunny(Animal):
     """ Specific class for a Bunny type animal with its characteristics. """
-    def name() -> str:
-
     def name(self) -> str:
         return "Bunny"
     
