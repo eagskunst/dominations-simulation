@@ -20,7 +20,7 @@ class Nation():
     current_busy_population_count: int
     houses_count: int
     animals = []
-    gold_mines: int
+    gold_mines: int = 0
 
     def advance_time(self):
         self.current_time += 1
@@ -64,7 +64,7 @@ class Nation():
 class Resources():
     food_count: int
     gold_count: int
-    gold_food_buidings: list[Building]
+    gold_food_buildings: list[Building]
 
     def show_status(self):
         status = "Resources\n"
@@ -130,8 +130,8 @@ class ResearchAndDevelopment():
         event = events.BuildBuilding(nation, self, res, building_type, seed)
         event_handler.add_event(event)
     
-    def improve_building(self, event_handler, nation, res, building, seed: int):
-        event = events.ImproveBuilding(self, nation, res, building, seed)
+    def improve_building(self, event_handler, nation, res, building_name, seed: int):
+        event = events.ImproveBuilding(self, nation, res, building_name, seed)
         event_handler.add_event(event)
     
     def show_status(self):
