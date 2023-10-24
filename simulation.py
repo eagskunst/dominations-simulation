@@ -38,7 +38,9 @@ class Simulation:
             if choice == "1":
                 user_event_choice = input("Enter the type of event you want to add: ")
                 try:
-                    self.create_events_based_on_input(user_event_choice, self.nation, self.resources, self.combat, self.research_and_dev, self.enemy_nation, event_handler)
+                    self.create_events_based_on_input(user_event_choice, event_handler)
+                    print(f"{user_event_choice} added")
+                    input()
                 except EventAdditionError as e:
                     print(e)
                     input()
@@ -55,6 +57,7 @@ class Simulation:
                 event_handler.advance_time()
                 self.stats_cache.update_historics(self)  # Update historical data
                 print("Simulation advanced by one time step.")
+                input()
             elif choice == "4":
                 if self.nation.not_worked_space > 0:
                     print("You have to used all available space first.")
@@ -113,13 +116,13 @@ class Simulation:
         else:
             print("Invalid event name. Please try again.")
     
-    def show_event_list():
+    def show_event_list(self):
         events = {
-            "MineGoldEvent": "Mine gold from available gold mines.",
+            "MineGold": "Mine gold from available gold mines.",
             "CollectRoadGold": "Collect gold from the roads.",
-            "BuildRoadEvent": "Build new roads for the nation.",
-            "OpenSpaceEvent": "Open up new space for building.",
-            "HuntAnimalEvent": "Hunt animals for resources.",
+            "BuildRoad": "Build new roads for the nation.",
+            "OpenSpace": "Open up new space for building.",
+            "HuntAnimal": "Hunt animals for resources.",
             "BuildBuilding": "Construct new buildings for the nation.",
             "ImproveBuilding": "Improve the level of existing buildings.",
             "AttackEnemiesEvent": "Initiate an attack on enemy nation.",

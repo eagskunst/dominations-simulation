@@ -1,8 +1,5 @@
-from __future__ import annotations  # <-- Additional import.
 from dataclasses import dataclass
-import typing
-if typing.TYPE_CHECKING:
-    import events
+import events
 from entities import  building_types, Building
 import numpy as np
 
@@ -23,7 +20,7 @@ class Nation():
     current_busy_population_count: int
     houses_count: int
     animals = []
-    gold_mines: int
+    gold_mines: int = 0
 
     def advance_time(self):
         self.current_time += 1
@@ -67,7 +64,7 @@ class Nation():
 class Resources():
     food_count: int
     gold_count: int
-    gold_food_buidings: list[Building]
+    gold_food_buildings: list[Building]
 
     def show_status(self):
         status = "Resources\n"

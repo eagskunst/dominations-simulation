@@ -8,7 +8,7 @@ combat:
   training_time: 30
 enemy_nation:
   attack_coefficient: 0.6
-  attacks_risk_rate: 20
+  attacks_risk_rate: 0.1
   defense_buildings_coefficient: 0.7
   defense_units_coefficient: 0.8
   food_per_combat: 0
@@ -26,7 +26,7 @@ nation:
   current_busy_population_count: 50
   current_time: 0
   gold_mine_spawn_rate: 0.3
-  gold_mines: []
+  gold_mines: 0
   houses_count: 10
   hunt_time: 5
   mine_time: 5
@@ -44,4 +44,4 @@ research_and_dev:
 resources:
   food_count: 100
   gold_count: 50
-  gold_food_buidings: []
+  gold_food_buildings: []

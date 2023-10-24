@@ -1,4 +1,7 @@
-from models import Nation, Resources, Combat, ResearchAndDevelopment, EnemyNation
+from __future__ import annotations  # <-- Additional import.
+import typing
+if typing.TYPE_CHECKING:
+    from models import Nation, Resources, Combat, ResearchAndDevelopment, EnemyNation
 from entities import Animal, BuildingFactory, Building, GoldBuilding, HouseBuilding, FoodBuilding, AnimalFactory, animal_types
 import numpy as np
 import sys
@@ -179,7 +182,7 @@ class BuildBuilding(Event):
             self.nation.houses_count += 1
             self.nation.population_count += 2
         elif type(self.building) is FoodBuilding or type(self.building) is GoldBuilding:
-            self.res.gold_food_buidings.append(self.building)
+            self.res.gold_food_buildings.append(self.building)
         self.nation.available_space -= 1
         if self.nation.available_space < 0:
             self.nation.available_space = 0
@@ -190,7 +193,7 @@ class ImproveBuilding(Event):
     def __init__(self, rd: ResearchAndDevelopment, nation: Nation, res: Resources, building_name: str, seed):
         super().__init__()
         building: Building = None
-        for b in res.gold_food_buidings:
+        for b in res.gold_food_buildings:
             if b.type == building_name:
                 building = b
                 if b.level + 1 > rd.max_building_improvements or b.improving:
@@ -292,6 +295,7 @@ class DefendFromEnemiesEvent(Event):
 
     def __init__(self, enemy_nation: EnemyNation, combat: Combat, res: Resources):
         super().__init__()
+        print("Enemy nation attack")
         self.enemy_nation = enemy_nation
         self.combat = combat
         self.res = res
@@ -300,7 +304,10 @@ class DefendFromEnemiesEvent(Event):
     def tick(self):
         if self.combat.defense_units_count >= self.enemy_nation.attack_coefficient:
             print("Defend success!")
-            self.combat.defense_units_count = np.random.randint(low=1, high=self.combat.defense_units_count - 1)
+            try:
+                self.combat.defense_units_count = np.random.randint(low=1, high=self.combat.defense_units_count - 1)
+            except ValueError: # for low >= high error
+                self.combat.defense_units_count = 1
         else:
             print("Defense failed")
             self.combat.defense_units_count = 0
