@@ -5,7 +5,16 @@ import sys
 from utils import EventAdditionError
 
 class Event:
+    """
+    Base class for all events in the game.
 
+    Attributes:
+        ticks (int): The number of ticks for the event.
+
+    Methods:
+        tick(): Advance the event by one tick.
+        is_finished(): Check if the event has finished.
+    """
     def __init__(self) -> None:
         self.ticks = 0
 
@@ -16,7 +25,16 @@ class Event:
         return self.ticks <= 0
 
 class MineGoldEvent(Event):
+    """
+    Represents an event where the nation mines gold.
 
+    Attributes:
+        GOLD_PER_MINE (int): The amount of gold generated per mine.
+        NEEDED_WORKERS (int): The number of workers needed for the event.
+
+    Methods:
+        tick(): Advance the event by one tick.
+    """
     GOLD_PER_MINE = 300
     NEEDED_WORKERS = 2
 
@@ -45,6 +63,16 @@ class MineGoldEvent(Event):
             self.nation.gold_mines = 0
 
 class CollectRoadGold(Event):
+    """
+    Represents an event where the nation collects gold from roads.
+
+    Attributes:
+        nation (Nation): The nation collecting road gold.
+        resources (Resources): The nation's resources.
+
+    Methods:
+        tick(): Advance the event by one tick.
+    """
 
     def __init__(self, nation: Nation, resources: Resources):
         super().__init__()
@@ -66,6 +94,15 @@ class CollectRoadGold(Event):
         self.resources.gold_count += self.nation.road_gold_generation
 
 class BuildRoadEvent(Event):
+    """
+    Represents an event to build roads in the nation.
+
+    Attributes:
+        nation (Nation): The nation building roads.
+
+    Methods:
+        tick(): Advance the event by one tick.
+    """
 
     def __init__(self, nation: Nation):
         super().__init__()
@@ -82,6 +119,15 @@ class BuildRoadEvent(Event):
         print("Roads built")
 
 class OpenSpaceEvent(Event):
+    """
+    Represents an event to open up new space for building.
+
+    Attributes:
+        nation (Nation): The nation opening new space.
+
+    Methods:
+        tick(): Advance the event by one tick.
+    """
 
     SPACE_TICKS = 5
     NEEDED_WORKERS = 3
@@ -146,7 +192,19 @@ class HuntAnimalEvent(Event):
             return None
 
 class BuildBuilding(Event):
+    """
+    Represents an event to build a new building in the nation.
 
+    Attributes:
+        nation (Nation): The nation where the building is constructed.
+        rd (ResearchAndDevelopment): Information about research and development.
+        res (Resources): The nation's resources.
+        building_type (str): The type of building to be constructed.
+        seed (int): Random seed for cost calculation.
+
+    Methods:
+        tick(): Advance the event by one tick.
+    """
     def __init__(self, nation: Nation, rd: ResearchAndDevelopment, res: Resources, building_type: str, seed: int):
         super().__init__()
         building = BuildingFactory().create(building_type)
@@ -186,7 +244,19 @@ class BuildBuilding(Event):
         self.nation.used_space += 1
 
 class ImproveBuilding(Event):
+    """
+    Represents an event to improve a building in the nation.
 
+    Attributes:
+        rd (ResearchAndDevelopment): Information about research and development.
+        nation (Nation): The nation where the building is improved.
+        res (Resources): The nation's resources.
+        building (Building): The building to be improved.
+        seed (int): Random seed for cost calculation.
+
+    Methods:
+        tick(): Advance the event by one tick.
+    """
     def __init__(self, rd: ResearchAndDevelopment, nation: Nation, res: Resources, building: Building, seed):
         super().__init__()
         if type(building) is HouseBuilding:
@@ -225,7 +295,17 @@ class ImproveBuilding(Event):
         self.building.improving = False
 
 class AttackEnemiesEvent(Event):
+    """
+    Represents an event where the nation attacks enemies.
 
+    Attributes:
+        enemy_nation (EnemyNation): The enemy nation being attacked.
+        combat (Combat): Information about the nation's combat capabilities.
+        res (Resources): The nation's resources.
+
+    Methods:
+        tick(): Advance the event by one tick.
+    """
     def __init__(self, enemy_nation: EnemyNation, combat: Combat, res: Resources):
         super().__init__()
         if combat.attack_units_count <= 0 or combat.attack_buildings_count <= 0:
@@ -261,7 +341,15 @@ class AttackEnemiesEvent(Event):
             print(f"Added {new_food} food and {new_gold} gold")
 
 class RestFromAttackEvent(Event):
+    """
+    Represents an event where the nation's troops rest after an attack.
 
+    Attributes:
+        combat (Combat): Information about the nation's combat capabilities.
+
+    Methods:
+        tick(): Advance the event by one tick.
+    """
     REST_TICKS = 20
 
     def __init__(self, combat: Combat):
@@ -277,7 +365,17 @@ class RestFromAttackEvent(Event):
         self.combat.resting = False
 
 class DefendFromEnemiesEvent(Event):
+    """
+    Represents an event where the nation defends against enemy attacks.
 
+    Attributes:
+        enemy_nation (EnemyNation): The enemy nation launching the attack.
+        combat (Combat): Information about the nation's combat capabilities.
+        res (Resources): The nation's resources.
+
+    Methods:
+        tick(): Advance the event by one tick.
+    """
     def __init__(self, enemy_nation: EnemyNation, combat: Combat, res: Resources):
         super().__init__()
         self.enemy_nation = enemy_nation
@@ -299,7 +397,15 @@ class DefendFromEnemiesEvent(Event):
             print(f"We lost {lost_food} food and {lost_gold} gold")
 
 class SpawnMineEvent(Event):
+    """
+    Represents an event where a gold mine spawns in the nation.
 
+    Attributes:
+        nation (Nation): The nation where the mine spawns.
+
+    Methods:
+        tick(): Advance the event by one tick.
+    """
     def __init__(self, nation: Nation):
         super().__init__()
         self.ticks = sys.maxsize
@@ -333,7 +439,16 @@ class SpawnAnimalEvent(Event):
             print(f"{animal_name} spawned")
 
 class UpdateRandomValuesEvent(Event):
+    """
+    Represents an event to update random values in the enemy nation.
 
+    Attributes:
+        enemy_nation (EnemyNation): The enemy nation to update.
+        res (Resources): The resources of the player's nation.
+
+    Methods:
+        tick(): Advance the event by one tick.
+    """
     def __init__(self, enemy_nation: EnemyNation, res: Resources):
         super().__init__()
         self.ticks = sys.maxsize

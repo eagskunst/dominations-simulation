@@ -4,6 +4,14 @@ from dataclasses import asdict, dataclass
 from models import Nation, Resources, Combat, ResearchAndDevelopment, EnemyNation
 
 def create_models_from_yml():
+    """
+    Reads data from 'models.yml', processes it, and creates model instances.
+    
+    Returns:
+        tuple: A tuple containing instances of Nation, Resources, Combat, 
+        ResearchAndDevelopment, and EnemyNation. If any data is missing from the
+        YAML, the respective instance will be None.
+    """
     with open('models.yml', 'r') as file:
         data = yaml.safe_load(file)
 
@@ -22,6 +30,11 @@ def create_models_from_yml():
         return nation_instance, resources_instance, combat_instance, research_and_dev_instance, enemy_nation_instance
 
 def main():
+    """
+    Main function to run the script. It fetches model data from 'models.yml' 
+    and prints the corresponding instances. This serves as a basic demonstration
+    of how the models can be populated from the YAML.
+    """
     nation, resources, combat, research_and_dev, enemy_nation = create_models_from_yml()
     print(nation)
     print(resources)
@@ -36,6 +49,10 @@ def main():
     #     input()
 
 def create_default_yml_file():
+    """
+    Generates a 'models.yml' file with default data. This can be used as a sample
+    or as a reset to a default state.
+    """
     nation = Nation("Sample Nation", 0, 100, 20, 80, 0.5, 0.3, 50, 200, 10, 5, 5, 50, 10, [])
     resources = Resources(100, 50, [])
     combat = Combat(200, 150, 300, 20, 0.7, 30, False)

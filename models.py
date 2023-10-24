@@ -5,6 +5,36 @@ import numpy as np
 
 @dataclass
 class Nation():
+    """
+    Represents a nation in the game.
+
+    Attributes:
+        name (str): The name of the nation.
+        current_time (int): The current time in the game.
+        available_space (int): Available space in the nation.
+        not_worked_space (int): Space not currently in use.
+        used_space (int): Space currently in use.
+        animal_spawn_rate (float): Rate of animal spawn.
+        gold_mine_spawn_rate (float): Rate of gold mine spawn.
+        roads_count (int): Number of roads in the nation.
+        population_count (int): Total population count.
+        road_gold_generation (int): Gold generation from roads.
+        hunt_time (int): Time required for hunting.
+        mine_time (int): Time required for mining.
+        current_busy_population_count (int): Count of population currently engaged.
+        houses_count (int): Number of houses in the nation.
+        animals (list): List of animals in the nation.
+        gold_mines (int): Number of gold mines in the nation.
+
+    Methods:
+        advance_time(): Increment the current time by 1.
+        mine_gold(event_handler, resources): Schedule a gold mining event.
+        collect_gold_from_roads(event_handler, resources): Schedule a gold collection event from roads.
+        build_road(event_handler): Schedule a road building event.
+        open_space(event_handler): Schedule an event to open more space.
+        hunt_animal(event_handler, animal_name, resources): Schedule a hunting event.
+        show_status(): Display the status of the nation.
+    """
     name: str
     current_time: int
     available_space: int
@@ -62,6 +92,17 @@ class Nation():
 
 @dataclass
 class Resources():
+    """
+    Represents the resources in the game.
+
+    Attributes:
+        food_count (int): The count of available food.
+        gold_count (int): The count of available gold.
+        gold_food_buidings (list[Building]): List of buildings related to gold and food.
+
+    Methods:
+        show_status(): Display the status of resources.
+    """
     food_count: int
     gold_count: int
     gold_food_buidings: list[Building]
@@ -75,6 +116,21 @@ class Resources():
 
 @dataclass
 class Combat():
+    """
+    Represents the combat statistics and capabilities of a nation.
+
+    Attributes:
+        attack_units_count (int): Count of attack units.
+        defense_units_count (int): Count of defense units.
+        max_combat_units_count (int): Maximum combat units count.
+        attack_buildings_count (int): Count of buildings related to attack.
+        attack_force_rate (float): Attack force rate.
+        training_time (int): Time required for training.
+        resting (bool): Whether the units are resting.
+
+    Methods:
+        show_status(): Display the combat status of the nation.
+    """
     attack_units_count: int
     defense_units_count: int
     max_combat_units_count: int
@@ -96,6 +152,22 @@ class Combat():
 
 @dataclass
 class ResearchAndDevelopment():
+    """
+    Represents the research and development capabilities of a nation.
+
+    Attributes:
+        era_level (int): The level of the era.
+        max_building_improvements (int): Maximum building improvement level.
+        bulding_build_time (int): Time required to build a building.
+        building_improvement_time (int): Time required for building improvement.
+
+    Methods:
+        calculate_building_cost(building_type, seed): Calculate the cost of building construction.
+        calculate_improvement_cost(building_type, seed): Calculate the cost of building improvement.
+        create_building(event_handler, nation, res, building_type, seed): Schedule a building construction event.
+        improve_building(event_handler, nation, res, building, seed): Schedule a building improvement event.
+        show_status(): Display the research and development status of the nation.
+    """
     era_level: int
     max_building_improvements: int
     bulding_build_time: int             # todo se debe cambiar por exponencial segun la era
@@ -144,6 +216,31 @@ class ResearchAndDevelopment():
 
 @dataclass
 class EnemyNation():
+    """
+    Represents an enemy nation in the game.
+
+    Attributes:
+        attack_coefficient (float): Attack coefficient.
+        defense_units_coefficient (float): Defense units coefficient.
+        defense_buildings_coefficient (float): Defense buildings coefficient.
+        gold_per_combat_mean (int): Mean gold per combat.
+        gold_per_combat_std (int): Standard deviation of gold per combat.
+        food_per_combat_mean (int): Mean food per combat.
+        food_per_combat_std (int): Standard deviation of food per combat.
+        units_per_combat_mean (int): Mean units per combat.
+        units_per_combat_std (int): Standard deviation of units per combat.
+        attacks_risk_rate (float): Risk rate of attacks.
+        food_per_combat (int): Food cost per combat.
+        gold_per_combat (int): Gold cost per combat.
+        units_per_combat (int): Units per combat.
+
+    Methods:
+        update_attacks_risk_rate(resources): Update the risk rate of attacks based on available resources.
+        update_gold_per_combat(): Update the gold cost per combat.
+        update_food_per_combat(): Update the food cost per combat.
+        update_units_per_combat(): Update the units per combat.
+        show_status(): Display the status of the enemy nation.
+    """
     attack_coefficient: float
     defense_units_coefficient: float
     defense_buildings_coefficient: float
