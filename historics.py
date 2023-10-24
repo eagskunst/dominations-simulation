@@ -1,3 +1,4 @@
+import matplotlib.backends.backend_pdf as mpdf
 import matplotlib.pyplot as plt
 
 class StatsCache:
@@ -45,7 +46,7 @@ class StatsCache:
         self.food_per_combat.append(simulation.enemy_nation.food_per_combat)
         self.units_per_combat.append(simulation.enemy_nation.units_per_combat)
 
-    def plot_attribute(self, attribute_name, title):
+    def plot_attribute(self, pdf_pages, attribute_name, title):
         values = getattr(self, attribute_name)
         time = list(range(1, len(values) + 1))
 
@@ -56,9 +57,12 @@ class StatsCache:
         plt.ylabel("Value")
         plt.grid(True)
         plt.legend()
-        plt.show()
+        pdf_pages.savefig()
+        plt.close()
 
     def plot_all_attributes(self):
+        pdf_pages = mpdf.PdfPages('simulation_plots.pdf')  # PDF file to save the plots
         for attribute_name in dir(self):
             if not attribute_name.startswith("__") and not callable(getattr(self, attribute_name)):
-                self.plot_attribute(attribute_name, f"{attribute_name} over Time")
+                self.plot_attribute(pdf_pages, attribute_name, f"{attribute_name} over Time")
+        pdf_pages.close()  # Close the PDF after saving all the plots

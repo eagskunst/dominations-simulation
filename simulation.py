@@ -36,8 +36,8 @@ class Simulation:
             print("6. End simulation")
             choice = input("Enter your choice: ")
             if choice == "1":
-                user_event_choice = input("Enter the type of event you want to add: ")
                 try:
+                    user_event_choice = input("Enter the type of event you want to add: ")
                     self.create_events_based_on_input(user_event_choice, event_handler)
                     print(f"{user_event_choice} added")
                     input()
@@ -114,7 +114,7 @@ class Simulation:
             event = events.AttackEnemiesEvent(self.enemy_nation, self.combat, self.resources)
             event_handler.add_event(event)
         else:
-            print("Invalid event name. Please try again.")
+            raise EventAdditionError("Invalid event name. Please try again.")
     
     def show_event_list(self):
         events = {
