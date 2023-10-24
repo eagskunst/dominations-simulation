@@ -122,6 +122,16 @@ class HouseBuilding(Building):
     def workers_needed(self) -> int:
         return self.level
     
+class AttackBuilding(Building):
+    """ Specific class for a Attack-type building with its characteristics. """
+    def workers_needed(self) -> int:
+        return self.level * 4
+    
+class DefenseBuilding(Building):
+    """ Specific class for a Defense-type building with its characteristics. """
+    def workers_needed(self) -> int:
+        return self.level * 3
+    
 class BuildingFactory:
     """
     Factory class for creating Building instances based on their types.
@@ -132,4 +142,8 @@ class BuildingFactory:
         elif building_type == "Food":
             return FoodBuilding(building_type)
         elif building_type == "House":
+            return HouseBuilding(building_type)
+        elif building_type == "Attack":
+            return HouseBuilding(building_type)
+        elif building_type == "Defense":
             return HouseBuilding(building_type)
