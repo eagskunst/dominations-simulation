@@ -76,7 +76,7 @@ class Simulation:
             else:
                 print("Invalid choice. Please try again.")
                 input()
-        print("Showing graphs")
+        print("Saving graphs to 'simulation_plots.pdf' file")
         self.stats_cache.plot_all_attributes()
     
     def add_default_events(self, event_handler: EventHandler):

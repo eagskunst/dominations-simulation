@@ -49,24 +49,27 @@ class MineGoldEvent(Event):
 
 class CollectRoadGold(Event):
 
-    def __init__(self, nation: Nation, resources: Resources):
+    def __init__(self, nation: Nation, resources: Resources, event_handler):
         super().__init__()
         self.nation = nation
         self.resource = resources
         self.ticks = nation.roads_count
         self.resources = resources
-        self.gold_earned = 0
+        if event_handler.collecting_gold:
+            raise EventAdditionError("Cannot collect gold if already collecting")
+        event_handler.collecting_gold = True
+        self.event_handler = event_handler
         if self.nation.roads_count <= 0:
-            raise EventAdditionError("No hay caminos para recolectar")
+            raise EventAdditionError("No roads to collect")
+        self.gold_earned = self.nation.road_gold_generation * self.nation.roads_count
     
     def tick(self):
         self.ticks -= 1
         if self.ticks <= 0:
-            print("Terminada la recolección de caminos")
-            print(f"Oro generado: {self.gold_earned}")
+            print(f"Gold collected from roads. Gold earned: {self.gold_earned}")
             return
-        self.gold_earned += self.nation.road_gold_generation
-        self.resources.gold_count += self.nation.road_gold_generation
+        self.resources.gold_count += self.gold_earned
+        self.event_handler.collecting_gold = False
 
 class BuildRoadEvent(Event):
 
