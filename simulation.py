@@ -25,6 +25,7 @@ class Simulation:
         event_handler = EventHandler(self.nation)
         self.add_default_events(event_handler)
         while True:
+            print(self.nation.show_status())
             print("1. Add a new event")
             print("2. Check status")
             print("3. Continue simulation")
@@ -40,7 +41,10 @@ class Simulation:
                     print(e)
             elif choice == "2":
                 print("Status: ")
-                # TODO print status from all components
+                print(self.resources.show_status())
+                print(self.combat.show_status())
+                print(self.research_and_dev.show_status())
+                print(self.enemy_nation.show_status())
             elif choice == "3":
                 # Advance the simulation by one time step
                 self.roll_for_enemy_attack(event_handler)
