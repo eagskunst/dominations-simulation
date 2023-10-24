@@ -97,7 +97,7 @@ class Simulation:
         elif user_input == "CollectRoadGold":
             self.nation.collect_gold_from_roads(event_handler, self.resources)
         elif user_input == "BuildRoad":
-            self.nation.build_road(event_handler)
+            self.nation.build_road(event_handler, self.resources, self.combat)
         elif user_input == "OpenSpace":
             self.nation.open_space(event_handler)
         elif user_input == "HuntAnimal":
@@ -125,7 +125,7 @@ class Simulation:
             "HuntAnimal": "Hunt animals for resources.",
             "BuildBuilding": "Construct new buildings for the nation.",
             "ImproveBuilding": "Improve the level of existing buildings.",
-            "AttackEnemiesEvent": "Initiate an attack on enemy nation.",
+            "AttackEnemies": "Initiate an attack on enemy nation.",
         }
 
         print("List of Events:")

@@ -5,7 +5,7 @@ if typing.TYPE_CHECKING:
 from entities import Animal, BuildingFactory, Building, GoldBuilding, HouseBuilding, FoodBuilding, AnimalFactory, animal_types
 import numpy as np
 import sys
-from utils import EventAdditionError
+from utils import EventAdditionError, get_buildings_count
 
 class Event:
 
@@ -34,6 +34,9 @@ class MineGoldEvent(Event):
             + MineGoldEvent.NEEDED_WORKERS >= nation.population_count):
             raise EventAdditionError("Can not start mine gold event because there is not enough available population")
         else:
+            nation.gold_mines -= 1
+            if self.nation.gold_mines < 0:
+                self.nation.gold_mines = 0
             nation.current_busy_population_count += MineGoldEvent.NEEDED_WORKERS
     
     def tick(self):
@@ -43,9 +46,6 @@ class MineGoldEvent(Event):
         print("Gold mined. Disposing resources.")
         self.nation.current_busy_population_count -= MineGoldEvent.NEEDED_WORKERS
         self.resources.gold_count += MineGoldEvent.GOLD_PER_MINE
-        self.nation.gold_mines -= 1
-        if self.nation.gold_mines < 0:
-            self.nation.gold_mines = 0
 
 class CollectRoadGold(Event):
 
@@ -70,11 +70,12 @@ class CollectRoadGold(Event):
 
 class BuildRoadEvent(Event):
 
-    def __init__(self, nation: Nation):
+    def __init__(self, nation: Nation, res: Resources, combat: Combat):
         super().__init__()
         self.ticks = 1
         self.nation = nation
-        if nation.roads_count + 4 > nation.buildings_count * 4:
+        buildings_count = get_buildings_count(nation, res, combat)
+        if nation.roads_count + 4 > buildings_count * 4:
             raise EventAdditionError("You must build more buildings before building more roads")
     
     def tick(self):
@@ -142,7 +143,7 @@ class HuntAnimalEvent(Event):
         self.nation.current_busy_population_count -= self.animal.workers_needed()
         print(f"Animal {self.animal.name()} hunted, added {self.animal.food_given()} food")
     
-    def find_first_occurrence(lst, predicate):
+    def find_first_occurrence(self, lst, predicate):
         try:
             return next(x for x in lst if predicate(x))
         except StopIteration:
@@ -154,12 +155,13 @@ class BuildBuilding(Event):
         super().__init__()
         building = BuildingFactory().create(building_type)
         if nation.current_busy_population_count + building.workers_needed() > nation.population_count:
-            raise EventAdditionError("There is not enough population for doing this work")
+            people_needed = nation.current_busy_population_count + building.workers_needed()
+            raise EventAdditionError(f"There is not enough population for doing this work. Needs: {people_needed} people")
         gold_cost, food_cost = rd.calculate_building_cost(building_type, seed) 
         if food_cost > res.food_count:
-            raise EventAdditionError("There is not enough food for doing this work")
+            raise EventAdditionError(f"There is not enough food for doing this work. Needs {food_cost} food")
         elif gold_cost > res.gold_count:
-            raise EventAdditionError("There is not enough gold for doing this work")
+            raise EventAdditionError(f"There is not enough gold for doing this work. Needs {gold_cost} gold")
     
         res.food_count -= food_cost
         if res.food_count < 0:
@@ -187,6 +189,7 @@ class BuildBuilding(Event):
         if self.nation.available_space < 0:
             self.nation.available_space = 0
         self.nation.used_space += 1
+        print(f"{self.building.type} building built.")
 
 class ImproveBuilding(Event):
 
@@ -302,6 +305,9 @@ class DefendFromEnemiesEvent(Event):
         self.ticks = 1
     
     def tick(self):
+        self.ticks -= 1
+        if self.ticks != 0:
+            return
         if self.combat.defense_units_count >= self.enemy_nation.attack_coefficient:
             print("Defend success!")
             try:
