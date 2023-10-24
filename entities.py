@@ -21,57 +21,59 @@ class Animal:
 class Bunny(Animal):
     """ Specific class for a Bunny type animal with its characteristics. """
     def name() -> str:
+
+    def name(self) -> str:
         return "Bunny"
     
-    def hunt_time() -> int:
+    def hunt_time(self) -> int:
         return 2
     
-    def food_given() -> int:
+    def food_given(self) -> int:
         return 4
     
-    def workers_needed() -> int:
+    def workers_needed(self) -> int:
         return 1
 
 class Fox(Animal):
-    """ Specific class for a Fox type animal with its characteristics. """
-    def name() -> str:
+    """ Specific class for a Fox type animal with its characteristics. """  
+    def name(self) -> str:
         return "Fox"
     
-    def hunt_time() -> int:
+    def hunt_time(self) -> int:
         return 3
     
-    def food_given() -> int:
+    def food_given(self) -> int:
         return 10
     
-    def workers_needed() -> int:
+    def workers_needed(self) -> int:
         return 2
 
 class Deer(Animal):
     """ Specific class for a Deer type animal with its characteristics. """
-    def name() -> str:
+    def name(self) -> str:
         return "Deer"
     
-    def hunt_time() -> int:
+    def hunt_time(self) -> int:
         return 5
     
-    def food_given() -> int:
+    def food_given(self) -> int:
         return 30
     
-    def workers_needed() -> int:
+    def workers_needed(self) -> int:
         return 3
 
 class Bear(Animal):
     """ Specific class for a Bear type animal with its characteristics. """
-    def name() -> str:
+    def name(self) -> str:
         return "Bear"
     
-    def hunt_time() -> int:
+    def hunt_time(self) -> int:
         return 8
     
-    def food_given() -> int:
+    def food_given(self) -> int:
         return 70
     
-    def workers_needed() -> int:
+    def workers_needed(self) -> int:
         return 4
 
 class AnimalFactory:
@@ -81,7 +83,7 @@ class AnimalFactory:
     Raises:
         RuntimeError: When trying to create an animal type that isn't supported.
     """
-    def create(name: str) -> Animal:
+    def create(self, name: str) -> Animal:
         if name == "Bunny":
             return Bunny()
         elif name == "Fox":
@@ -104,7 +106,7 @@ class Building:
         self.improving = False
         pass
 
-    def workers_needed() -> int:
+    def workers_needed(self) -> int:
         pass
 
 class GoldBuilding(Building):
@@ -126,7 +128,7 @@ class BuildingFactory:
     """
     Factory class for creating Building instances based on their types.
     """
-    def create(building_type: str) -> Building:
+    def create(self, building_type: str) -> Building:
         if building_type == "Gold":
             return GoldBuilding(building_type)
         elif building_type == "Food":

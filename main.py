@@ -1,7 +1,7 @@
-from handlers import EventHandler
 import yaml
-from dataclasses import asdict, dataclass
+from dataclasses import asdict
 from models import Nation, Resources, Combat, ResearchAndDevelopment, EnemyNation
+from simulation import Simulation
 
 def create_models_from_yml():
     """
@@ -12,6 +12,7 @@ def create_models_from_yml():
         ResearchAndDevelopment, and EnemyNation. If any data is missing from the
         YAML, the respective instance will be None.
     """
+    print("Loading values from models.yml")
     with open('models.yml', 'r') as file:
         data = yaml.safe_load(file)
 
@@ -36,17 +37,8 @@ def main():
     of how the models can be populated from the YAML.
     """
     nation, resources, combat, research_and_dev, enemy_nation = create_models_from_yml()
-    print(nation)
-    print(resources)
-    print(combat)
-    print(research_and_dev)
-    print(enemy_nation)
-    # handler = EventHandler(nation)
-    # nation.mine_gold(handler, resources)
-    # while True:
-    #     print("new tick")
-    #     handler.advance_time()
-    #     input()
+    simulation = Simulation(nation=nation, resources=resources, combat=combat, research_and_dev=research_and_dev, enemy_nation=enemy_nation)
+    simulation.run()
 
 def create_default_yml_file():
     """
@@ -73,5 +65,6 @@ def create_default_yml_file():
         yaml.dump(data, file)
 
 if __name__ == "__main__":
+    print("Initializating simulation")
     main()
     # create_default_yml_file()

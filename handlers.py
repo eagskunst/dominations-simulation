@@ -1,4 +1,4 @@
-from events import Event
+from events import Event, RestFromAttackEvent
 from models import Nation
 
 class EventHandler():
@@ -28,7 +28,9 @@ class EventHandler():
                 removable_events.append(event)
         for event in removable_events:
             self.current_events.remove(event)
-            self.attack_running = not (type(event).__name__ == 'AttackEnemiesEvent')
+            if type(event).__name__ == 'AttackEnemiesEvent':
+                self.attack_running = False
+                self.add_event(RestFromAttackEvent(event.combat))
             
     
     def add_event(self, event: Event):
