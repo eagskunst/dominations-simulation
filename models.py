@@ -30,11 +30,11 @@ class Nation():
         event_handler.add_event(event)
     
     def collect_gold_from_roads(self, event_handler, resources):
-        event = events.CollectRoadGold(self, resources)
+        event = events.CollectRoadGold(self, resources, event_handler)
         event_handler.add_event(event)
     
-    def build_road(self, event_handler):
-        event = events.BuildRoadEvent(self)
+    def build_road(self, event_handler, resources, combat):
+        event = events.BuildRoadEvent(self, resources, combat)
         event_handler.add_event(event)
     
     def open_space(self, event_handler):

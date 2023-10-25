@@ -37,11 +37,11 @@ nation:
   roads_count: 50
   used_space: 80
 research_and_dev:
-  building_improvement_time: 20
-  bulding_build_time: 15
+  building_improvement_time: 2
+  bulding_build_time: 1
   era_level: 2
   max_building_improvements: 5
 resources:
-  food_count: 100
-  gold_count: 50
+  food_count: 1000
+  gold_count: 500
   gold_food_buildings: []
