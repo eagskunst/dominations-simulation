@@ -36,8 +36,8 @@ class Simulation:
             print("6. End simulation")
             choice = input("Enter your choice: ")
             if choice == "1":
-                user_event_choice = input("Enter the type of event you want to add: ")
                 try:
+                    user_event_choice = input("Enter the type of event you want to add: ")
                     self.create_events_based_on_input(user_event_choice, event_handler)
                     print(f"{user_event_choice} added")
                     input()
@@ -76,7 +76,7 @@ class Simulation:
             else:
                 print("Invalid choice. Please try again.")
                 input()
-        print("Showing graphs")
+        print("Saving graphs to 'simulation_plots.pdf' file")
         self.stats_cache.plot_all_attributes()
     
     def add_default_events(self, event_handler: EventHandler):
@@ -97,7 +97,7 @@ class Simulation:
         elif user_input == "CollectRoadGold":
             self.nation.collect_gold_from_roads(event_handler, self.resources)
         elif user_input == "BuildRoad":
-            self.nation.build_road(event_handler)
+            self.nation.build_road(event_handler, self.resources, self.combat)
         elif user_input == "OpenSpace":
             self.nation.open_space(event_handler)
         elif user_input == "HuntAnimal":
@@ -114,7 +114,7 @@ class Simulation:
             event = events.AttackEnemiesEvent(self.enemy_nation, self.combat, self.resources)
             event_handler.add_event(event)
         else:
-            print("Invalid event name. Please try again.")
+            raise EventAdditionError("Invalid event name. Please try again.")
     
     def show_event_list(self):
         events = {
@@ -125,7 +125,7 @@ class Simulation:
             "HuntAnimal": "Hunt animals for resources.",
             "BuildBuilding": "Construct new buildings for the nation.",
             "ImproveBuilding": "Improve the level of existing buildings.",
-            "AttackEnemiesEvent": "Initiate an attack on enemy nation.",
+            "AttackEnemies": "Initiate an attack on enemy nation.",
         }
 
         print("List of Events:")

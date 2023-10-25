@@ -14,6 +14,7 @@ class EventHandler():
         self.nation = nation
         self.current_events = current_events
         self.attack_running = False
+        self.collecting_gold = False
     
     def advance_time(self):
         """
