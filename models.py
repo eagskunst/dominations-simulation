@@ -5,6 +5,36 @@ import numpy as np
 
 @dataclass
 class Nation():
+    """
+    Represents a nation in the game.
+
+    Attributes:
+        name (str): The name of the nation.
+        current_time (int): The current time in the game.
+        available_space (int): Available space in the nation.
+        not_worked_space (int): Space not currently in use.
+        used_space (int): Space currently in use.
+        animal_spawn_rate (float): Rate of animal spawn.
+        gold_mine_spawn_rate (float): Rate of gold mine spawn.
+        roads_count (int): Number of roads in the nation.
+        population_count (int): Total population count.
+        road_gold_generation (int): Gold generation from roads.
+        hunt_time (int): Time required for hunting.
+        mine_time (int): Time required for mining.
+        current_busy_population_count (int): Count of population currently engaged.
+        houses_count (int): Number of houses in the nation.
+        animals (list): List of animals in the nation.
+        gold_mines (int): Number of gold mines in the nation.
+
+    Methods:
+        advance_time(): Increment the current time by 1.
+        mine_gold(event_handler, resources): Schedule a gold mining event.
+        collect_gold_from_roads(event_handler, resources): Schedule a gold collection event from roads.
+        build_road(event_handler): Schedule a road building event.
+        open_space(event_handler): Schedule an event to open more space.
+        hunt_animal(event_handler, animal_name, resources): Schedule a hunting event.
+        show_status(): Display the status of the nation.
+    """
     name: str
     current_time: int
     available_space: int
@@ -62,6 +92,17 @@ class Nation():
 
 @dataclass
 class Resources():
+    """
+    Represents the resources in the game.
+
+    Attributes:
+        food_count (int): The count of available food.
+        gold_count (int): The count of available gold.
+        gold_food_buidings (list[Building]): List of buildings related to gold and food.
+
+    Methods:
+        show_status(): Display the status of resources.
+    """
     food_count: int
     gold_count: int
     gold_food_buildings: list[Building]
@@ -75,27 +116,70 @@ class Resources():
 
 @dataclass
 class Combat():
+    """
+    Represents the combat statistics and capabilities of a nation.
+
+    Attributes:
+        attack_units_count (int): Count of attack units.
+        defense_units_count (int): Count of defense units.
+        max_combat_units_count (int): Maximum combat units count.
+        attack_buildings_count (int): Count of buildings related to attack.
+        attack_force_rate (float): Attack force rate.
+        training_time (int): Time required for training.
+        resting (bool): Whether the units are resting.
+
+    Methods:
+        show_status(): Display the combat status of the nation.
+    """
     attack_units_count: int
     defense_units_count: int
-    max_combat_units_count: int
+    max_attack_units_count: int
+    max_defense_units_count: int
     attack_buildings_count: int
+    defense_buildings_count: int
     attack_force_rate: float
+    defense_force_rate: float
     training_time: int
     resting: bool = False
+    attack_buildings: list[Building]
+    defense_buildings: list[Building]
 
     def show_status(self):
         status = "Combat\n"
         status += f"Attack Units Count: {self.attack_units_count}\n"
         status += f"Defense Units Count: {self.defense_units_count}\n"
-        status += f"Max Combat Units Count: {self.max_combat_units_count}\n"
+        status += f"Max Attack Units Count: {self.max_attack_units_count}\n"
+        status += f"Max Defense Units Count: {self.max_defense_units_count}\n"
         status += f"Attack Buildings Count: {self.attack_buildings_count}\n"
+        status += f"Defense Buildings Count: {self.defense_buildings_count}\n"
         status += f"Attack Force Rate: {self.attack_force_rate}\n"
+        status += f"Defense Force Rate: {self.defense_force_rate}\n"
         status += f"Training Time: {self.training_time}\n"
         status += f"Resting: {self.resting}\n"
         return status
+    
+    def calculate_attack_and_defense_rates(self):
+        self.attack_force_rate = (self.attack_units_count * 1.5) + (self.attack_buildings_count * 10)
+        self.defense_force_rate = (self.defense_units_count * 0.8) + (self.defense_buildings * 12)
 
 @dataclass
 class ResearchAndDevelopment():
+    """
+    Represents the research and development capabilities of a nation.
+
+    Attributes:
+        era_level (int): The level of the era.
+        max_building_improvements (int): Maximum building improvement level.
+        bulding_build_time (int): Time required to build a building.
+        building_improvement_time (int): Time required for building improvement.
+
+    Methods:
+        calculate_building_cost(building_type, seed): Calculate the cost of building construction.
+        calculate_improvement_cost(building_type, seed): Calculate the cost of building improvement.
+        create_building(event_handler, nation, res, building_type, seed): Schedule a building construction event.
+        improve_building(event_handler, nation, res, building, seed): Schedule a building improvement event.
+        show_status(): Display the research and development status of the nation.
+    """
     era_level: int
     max_building_improvements: int
     bulding_build_time: int             # todo se debe cambiar por exponencial segun la era
@@ -126,12 +210,12 @@ class ResearchAndDevelopment():
                 type_cost = (int(gold_cost), int(food_cost))
         return type_cost
     
-    def create_building(self, event_handler, nation, res, building_type: str, seed: int):
-        event = events.BuildBuilding(nation, self, res, building_type, seed)
+    def create_building(self, event_handler, nation, res, combat: Combat, building_type: str, seed: int):
+        event = events.BuildBuilding(nation, self, res, combat, building_type,  seed)
         event_handler.add_event(event)
     
-    def improve_building(self, event_handler, nation, res, building_name, seed: int):
-        event = events.ImproveBuilding(self, nation, res, building_name, seed)
+    def improve_building(self, event_handler, nation, res, combat, building_name, seed: int):
+        event = events.ImproveBuilding(self, nation, res, combat, building_name, seed)
         event_handler.add_event(event)
     
     def show_status(self):
@@ -144,6 +228,31 @@ class ResearchAndDevelopment():
 
 @dataclass
 class EnemyNation():
+    """
+    Represents an enemy nation in the game.
+
+    Attributes:
+        attack_coefficient (float): Attack coefficient.
+        defense_units_coefficient (float): Defense units coefficient.
+        defense_buildings_coefficient (float): Defense buildings coefficient.
+        gold_per_combat_mean (int): Mean gold per combat.
+        gold_per_combat_std (int): Standard deviation of gold per combat.
+        food_per_combat_mean (int): Mean food per combat.
+        food_per_combat_std (int): Standard deviation of food per combat.
+        units_per_combat_mean (int): Mean units per combat.
+        units_per_combat_std (int): Standard deviation of units per combat.
+        attacks_risk_rate (float): Risk rate of attacks.
+        food_per_combat (int): Food cost per combat.
+        gold_per_combat (int): Gold cost per combat.
+        units_per_combat (int): Units per combat.
+
+    Methods:
+        update_attacks_risk_rate(resources): Update the risk rate of attacks based on available resources.
+        update_gold_per_combat(): Update the gold cost per combat.
+        update_food_per_combat(): Update the food cost per combat.
+        update_units_per_combat(): Update the units per combat.
+        show_status(): Display the status of the enemy nation.
+    """
     attack_coefficient: float
     defense_units_coefficient: float
     defense_buildings_coefficient: float

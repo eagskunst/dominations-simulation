@@ -2,6 +2,15 @@ import matplotlib.backends.backend_pdf as mpdf
 import matplotlib.pyplot as plt
 
 class StatsCache:
+    """
+    Stores historical statistics over time for various attributes of a simulation run.
+    
+    Methods:
+        - update_historics: Updates the historical data based on the current state of the simulation.
+        - plot_attribute: Plots the historical data for a single attribute over time.
+        - plot_all_attributes: Plots the historical data for all attributes.
+    """
+    
     def __init__(self):
         self.not_worked_space = []
         self.used_space = []
@@ -27,6 +36,12 @@ class StatsCache:
         self.defense_losts = []
     
     def update_historics(self, simulation):
+        """
+        Pulls the current data from the simulation and appends it to the historical lists.
+        
+        Args:
+            simulation (object): The current state of the simulation.
+        """
         self.not_worked_space.append(simulation.nation.not_worked_space)
         self.used_space.append(simulation.nation.used_space)
         self.roads_count.append(simulation.nation.roads_count)
@@ -47,6 +62,13 @@ class StatsCache:
         self.units_per_combat.append(simulation.enemy_nation.units_per_combat)
 
     def plot_attribute(self, pdf_pages, attribute_name, title):
+        """
+        Plots a specific attribute's historical data.
+        
+        Args:
+            attribute_name (str): The attribute to plot.
+            title (str): Title for the plot.
+        """
         values = getattr(self, attribute_name)
         time = list(range(1, len(values) + 1))
 
@@ -61,6 +83,9 @@ class StatsCache:
         plt.close()
 
     def plot_all_attributes(self):
+        """
+        Iterates over all attributes and plots their historical data.
+        """
         pdf_pages = mpdf.PdfPages('simulation_plots.pdf')  # PDF file to save the plots
         for attribute_name in dir(self):
             if not attribute_name.startswith("__") and not callable(getattr(self, attribute_name)):
